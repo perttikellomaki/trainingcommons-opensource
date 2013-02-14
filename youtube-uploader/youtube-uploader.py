@@ -1,5 +1,17 @@
 #!/usr/bin/python
 
+import sys
+class FlushFile(object):
+    """Write-only flushing wrapper for file-type objects."""
+    def __init__(self, f):
+        self.f = f
+    def write(self, x):
+        self.f.write(x)
+        self.f.flush()
+
+# Replace stdout with an automatically flushing version
+sys.stdout = FlushFile(sys.__stdout__)
+
 import logging
 logging.basicConfig()
 
@@ -123,7 +135,8 @@ def resumable_upload(insert_request):
       print "Uploading file..."
       while response is None:
           status, response = insert_request.next_chunk()
-          print status.progress()
+          if status:
+            print status.progress()
           if response is None:
               pass
           elif 'id' in response:
