@@ -2,6 +2,7 @@
 
 import sys
 import re
+import time
 import subprocess
 from PySide import QtGui
 import EXIF
@@ -30,6 +31,8 @@ class Example(QtGui.QWidget):
         vbox = QtGui.QVBoxLayout()
         vbox.addStretch(1)
         vbox.addWidget(viewer)
+        self.pbar = QtGui.QProgressBar(self)
+        vbox.addWidget(self.pbar)
         vbox.addLayout(hbox)
         
         self.setLayout(vbox)    
@@ -73,7 +76,21 @@ class Example(QtGui.QWidget):
 
         print args
 
-        uploader = subprocess.Popen(args, shell=False)
+        uploader = subprocess.Popen(args, shell=False,
+                                    stdout = subprocess.PIPE)
+
+        progress_str = ""
+        while uploader.poll() is None:
+          c = uploader.stdout.read(1)
+          while c != '':
+            if c == '\n':
+              print int(100 * float(progress_str))
+              self.pbar.setValue(int(100 * float(progress_str)))
+              progress_str = ""
+            else:
+              progress_str += c
+            c = uploader.stdout.read(1)
+          time.sleep(5)
 
 def main():
     

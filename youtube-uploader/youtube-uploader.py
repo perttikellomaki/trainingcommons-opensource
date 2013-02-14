@@ -18,8 +18,6 @@ logging.basicConfig()
 import httplib
 import httplib2
 
-httplib2.debuglevel = 3
-
 import os
 import random
 import sys
@@ -132,7 +130,7 @@ def resumable_upload(insert_request):
   retry = 0
   while response is None:
     try:
-      print "Uploading file..."
+      sys.stderr.write("Uploading file...")
       while response is None:
           status, response = insert_request.next_chunk()
           if status:
@@ -140,8 +138,8 @@ def resumable_upload(insert_request):
           if response is None:
               pass
           elif 'id' in response:
-            print "'%s' (video id: %s) was successfully uploaded." % (
-              options.title, response['id'])
+            sys.stderr.write("'%s' (video id: %s) was successfully uploaded." % (
+                options.title, response['id']))
           else:
             exit("The upload failed with an unexpected response: %s" % response)
     except HttpError, e:
@@ -154,14 +152,14 @@ def resumable_upload(insert_request):
       error = "A retriable error occurred: %s" % e
 
     if error is not None:
-      print error
+      sys.stderr.write(error)
       retry += 1
       if retry > MAX_RETRIES:
         exit("No longer attempting to retry.")
 
       max_sleep = 2 ** retry
       sleep_seconds = random.random() * max_sleep
-      print "Sleeping %f seconds and then retrying..." % sleep_seconds
+      sys.stderr.write("Sleeping %f seconds and then retrying..." % sleep_seconds)
       time.sleep(sleep_seconds)
 
 
